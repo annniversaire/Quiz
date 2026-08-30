@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Quiz Anniversaire</title>
+  <style>
+    :root{--bg:#fff7f0;--card:#fff;--accent:#ff6f91;--accent2:#ffd166;--text:#333}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;margin:0;background:linear-gradient(135deg,var(--bg),#fff);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem}
+    .card{background:var(--card);padding:2rem;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,0.08);width:100%;max-width:520px;position:relative;overflow:hidden}
+    .header{display:flex;gap:1rem;align-items:center}
+    .balloons{width:64px;height:64px;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,0.6),transparent 20%),linear-gradient(180deg,var(--accent),var(--accent2));border-radius:50%;display:grid;place-items:center;color:white;font-weight:700}
+    h1{margin:0;font-size:1.4rem;color:var(--text)}
+    p.lead{color:#666;margin-top:.4rem}
+    form{margin-top:1.4rem;display:flex;gap:.6rem;align-items:center}
+    input[type="text"]{flex:1;padding:.7rem .8rem;border-radius:10px;border:2px dashed #f0a;outline:none;font-size:1rem}
+    button{padding:.7rem 1rem;border-radius:10px;border:none;background:linear-gradient(90deg,var(--accent),#ff4d6d);color:#fff;font-weight:700;cursor:pointer}
+    .result{margin-top:1rem;padding:1rem;border-radius:8px;background:#f9f9fb;color:var(--text);font-weight:600}
+    .good{background:linear-gradient(90deg,#e6ffef,#d6ffe6);color:#0b6b3a}
+    .bad{background:linear-gradient(90deg,#fff0f0,#ffecec);color:#8b1d1d}
+    footer{margin-top:1rem;font-size:.85rem;color:#999}
+    .confetti{position:absolute;inset:0;pointer-events:none}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <div class="balloons">🎈</div>
+      <div>
+        <h1>Quiz anniversaire !</h1>
+        <p class="lead">Réponds à la question pour découvrir un petit message secret.</p>
+      </div>
+    </div>
+
+    <form id="quiz">
+        <p class="lead">Quelle est la date de naissance d'OLE ? (format DD/MM)</p>	
+      <input id="date" name="date" type="text" inputmode="numeric" placeholder="JJ/MM" pattern="\d{2}/\d{2}" required />
+      <button type="submit">Vérifier</button>
+    </form>
+
+    <div id="result" class="result" aria-live="polite" style="display:none"></div>
+
+    <footer>Indice : c'est tous les jours l'année de son anniversaire 😂 </footer>
+  </div>
+
+  <script>
+    // ✅ Sécurité légère : on stocke ici le SHA-256 (hex) de la réponse correcte.
+    // Pour ne pas avoir la réponse en clair dans le HTML.
+    const correctHash = '3f27309197fe9f1762ac86b834b8e826d2c574d273b8aeec96bb377b7e66cddd';
+
+    // Convertit un ArrayBuffer en hex
+    function bufToHex(buffer){
+      const bytes = new Uint8Array(buffer);
+      return Array.from(bytes).map(b => b.toString(16).padStart(2,'0')).join('');
+    }
+
+    // Normalise la saisie : retire espaces, force 2/2 chiffres et slash
+    function normalize(input){
+      input = input.trim();
+      // Remplace ' ' et autres slash types par '/'
+      input = input.replace(/[\\s'‐–—−]+/g, '');
+      input = input.replace(/[\-._,]/g, '/');
+      // si pas de slash et 4 chiffres, insère le slash au milieu
+      if(!input.includes('/') && /^\d{4}$/.test(input)){
+        input = input.slice(0,2) + '/' + input.slice(2);
+      }
+      return input;
+    }
+
+    async function sha256Hex(str){
+      const enc = new TextEncoder();
+      const data = enc.encode(str);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      return bufToHex(hashBuffer);
+    }
+
+    document.getElementById('quiz').addEventListener('submit', async function(e){
+      e.preventDefault();
+      const inputEl = document.getElementById('date');
+      let val = normalize(inputEl.value);
+
+      const resultEl = document.getElementById('result');
+      resultEl.style.display = '';
+
+      // Validate format simple DD/MM
+      if(!/^\d{2}\/\d{2}$/.test(val)){
+        resultEl.textContent = 'Format invalide — utilise DD/MM (ex : 05/10).';
+        resultEl.className = 'result bad';
+        return;
+      }
+
+      const h = await sha256Hex(val);
+      if(h === correctHash){
+        resultEl.textContent = "Bravo ! Une clé et un Post-it se trouvent sous ton bureau 👑👑👑";
+        resultEl.className = 'result good';
+      } else {
+        resultEl.textContent = 'Mauvaise réponse , shame on you 😡😡😡';
+        resultEl.className = 'result bad';
+      }
+    });
+
+    // Petit réglage UX : accepte Entrée dans le champ
+    document.getElementById('date').addEventListener('keydown', function(e){
+      if(e.key === 'Enter'){
+        e.preventDefault();
+        this.form.dispatchEvent(new Event('submit', {cancelable:true}));
+      }
+    });
+  </script>
+</body>
+</html>
