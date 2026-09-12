@@ -702,14 +702,14 @@
       .map(n => document.getElementById("intro" + n));
 
     introLines.forEach((line, i) => {
-      setTimeout(() => line.classList.add("show"), 700 + i * 1500);
+      setTimeout(() => line.classList.add("show"), 700 + i * 1600);
     });
 
     setTimeout(() => {
       intro.classList.add("done");
       document.body.classList.remove("intro-lock");
       setTimeout(() => intro.remove(), 1100);
-    }, 700 + introLines.length * 1300 + 1300);
+    }, 700 + introLines.length * 1600 + 1600);
 
 
 
