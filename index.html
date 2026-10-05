@@ -681,6 +681,83 @@
       }
     }
 
+
+    /* =====================================================
+       PHOTO SYSTEMEZ — BROUILLAGE PUIS ÉCLAIRCISSEMENT
+       ===================================================== */
+
+    .systemez-intro-photo{
+      position:fixed;
+      top:24px;
+      right:24px;
+      width:115px;
+      height:115px;
+      object-fit:cover;
+      object-position:center;
+      border-radius:50%;
+      z-index:10000;
+      pointer-events:none;
+
+      /* État initial : très sombre, très flou et presque invisible. */
+      opacity:0;
+      transform:scale(.97);
+      filter:blur(34px) brightness(.08) contrast(1.7) saturate(.15);
+    }
+
+    /* Animation volontairement très lente :
+       0-45%  = vrai brouillage, sombre et très flou
+       45-100% = le brouillage disparaît puis la photo s'éclaircit */
+    .systemez-intro-photo.show{
+      animation:systemezReveal 3s cubic-bezier(.22,.61,.36,1) forwards;
+    }
+
+    @keyframes systemezReveal{
+      0%{
+        opacity:0;
+        transform:scale(.97);
+        filter:blur(34px) brightness(.08) contrast(1.7) saturate(.15);
+      }
+      12%{
+        opacity:.10;
+        filter:blur(34px) brightness(.10) contrast(1.7) saturate(.18);
+      }
+      30%{
+        opacity:.18;
+        filter:blur(32px) brightness(.13) contrast(1.65) saturate(.22);
+      }
+      45%{
+        opacity:.28;
+        filter:blur(28px) brightness(.18) contrast(1.55) saturate(.28);
+      }
+      60%{
+        opacity:.42;
+        filter:blur(20px) brightness(.30) contrast(1.35) saturate(.40);
+      }
+      75%{
+        opacity:.62;
+        filter:blur(11px) brightness(.50) contrast(1.18) saturate(.62);
+      }
+      88%{
+        opacity:.82;
+        filter:blur(4px) brightness(.75) contrast(1.08) saturate(.82);
+      }
+      100%{
+        opacity:1;
+        transform:scale(1);
+        filter:blur(0) brightness(1) contrast(1) saturate(1);
+      }
+    }
+
+    @media (max-width:600px){
+      .systemez-intro-photo{
+        top:14px;
+        right:14px;
+        width:80px;
+        height:80px;
+      }
+    }
+
+
   </style>
 </head>
 
@@ -724,6 +801,13 @@
     </div>
   </div>
 </div>
+
+  <img
+    id="systemezIntroPhoto"
+    class="systemez-intro-photo"
+    src="systemez.png"
+    alt="Photo"
+  >
 
 
   <div class="card">
@@ -833,6 +917,7 @@
       const yesButton = document.getElementById("introYes");
       const noButton = document.getElementById("introNo");
       const refreshButton = document.getElementById("introRefresh");
+      const systemezIntroPhoto = document.getElementById("systemezIntroPhoto");
 
       let waitingForAnswer = false;
       let finished = false;
@@ -842,6 +927,14 @@
           line.classList.add("show");
         }, 700 + i * 1600);
       });
+
+      // La photo commence à apparaître progressivement pendant la séquence.
+      // L'animation est volontairement lente pour suivre le rythme des phrases.
+      setTimeout(() => {
+        if (systemezIntroPhoto) {
+          systemezIntroPhoto.classList.add("show");
+        }
+      }, 1400);
 
       const questionDelay =
         700 + lines.length * 1600 + 500;
